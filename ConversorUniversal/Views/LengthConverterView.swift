@@ -6,8 +6,7 @@ struct LengthConverterView: View {
     @State private var sourceUnit: UnitLength = .meters
     @State private var destinationUnit: UnitLength = .kilometers
     
-    // 2. An array to store our units for the Pickers
-    // This avoids repeating code for each unit
+    // 2. Units array
     let units: [UnitLength] = [
         .millimeters,
         .centimeters,
@@ -20,7 +19,20 @@ struct LengthConverterView: View {
         .miles
     ]
     
-    // 3. Computed property to handle the logic
+    // 3. Formatter to get the full names of the units
+    private let formatter: MeasurementFormatter = {
+        let f = MeasurementFormatter()
+        f.unitOptions = .providedUnit // Uses the specific unit we provide
+        f.unitStyle = .long // .long displays "meters" instead of "m"
+        return f
+    }()
+    
+    // Helper function to get the name
+    func unitName(_ unit: UnitLength) -> String {
+        return formatter.string(from: unit).capitalized
+    }
+    
+    // 4. Computed property for logic
     var conversionResult: Double {
         let sourceMeasurement = Measurement(value: inputAmount, unit: sourceUnit)
         let resultMeasurement = sourceMeasurement.converted(to: destinationUnit)
@@ -40,14 +52,14 @@ struct LengthConverterView: View {
                 Section("Conversion") {
                     Picker("From:", selection: $sourceUnit) {
                         ForEach(units, id: \.self) { unit in
-                            // symbol provides "m", "km", etc.
-                            Text(unit.symbol).tag(unit)
+                            // Here we use the helper function to show the full name
+                            Text(unitName(unit)).tag(unit)
                         }
                     }
                     
                     Picker("To:", selection: $destinationUnit) {
                         ForEach(units, id: \.self) { unit in
-                            Text(unit.symbol).tag(unit)
+                            Text(unitName(unit)).tag(unit)
                         }
                     }
                 }
